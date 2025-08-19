@@ -1,7 +1,7 @@
 using Bloodcraft.Interfaces;
 using Bloodcraft.Services;
-using Bloodcraft.Systems.Professions;
-using Bloodcraft.Systems.Quests;
+
+
 using HarmonyLib;
 using ProjectM;
 using ProjectM.Network;
@@ -117,13 +117,10 @@ internal static class CraftingSystemPatches
 
                 if (forge_Shared.State == ForgeState.Finished)
                 {
-                    if (steamId.TryGetPlayerQuests(out var quests)) QuestSystem.ProcessQuestProgress(quests, itemPrefab, 1, user);
-                    else if (!_professions) continue;
+                   
+                    if (!_professions) continue;
 
-                    float professionValue = BASE_PROFESSION_XP * ProfessionMappings.GetTierMultiplier(itemPrefab);
-                    IProfession handler = ProfessionFactory.GetProfession(itemPrefab);
-
-                    if (handler != null)
+                    
                     {
                         if (itemEntity.Has<Durability>())
                         {
@@ -134,11 +131,10 @@ internal static class CraftingSystemPatches
 
                             if (durability.MaxDurability > originalDurability.MaxDurability) continue; // already handled
 
-                            float delay = SCT_DELAY;
+                            
 
                             // Core.Log.LogWarning($"Handling profession xp for {itemPrefab.GetPrefabName()}");
-                            ProfessionSystem.SetProfession(entity, user.LocalCharacter.GetEntityOnServer(), steamId, professionValue, handler, ref delay);
-                            EquipmentQualityManager.ApplyPlayerEquipmentStats(steamId, itemEntity);
+                            
                         }
                     }
                 }

@@ -1,8 +1,8 @@
-﻿using Bloodcraft.Commands;
+﻿
 using Bloodcraft.Patches;
 using Bloodcraft.Services;
-using Bloodcraft.Systems.Familiars;
-using Bloodcraft.Systems.Quests;
+
+
 using ProjectM;
 using Stunlock.Core;
 
@@ -15,7 +15,7 @@ internal static class Configuration
 
         foreach (PrefabGUID unit in unitBans)
         {
-            if (unit.HasValue()) FamiliarUnlockSystem.ConfiguredPrefabGuidBans.Add(unit);
+           
         }
 
         List<string> categoryBans = ConfigService.BannedTypes.Split(',').Select(s => s.Trim()).ToList();
@@ -24,7 +24,7 @@ internal static class Configuration
         {
             if (Enum.TryParse(category, out UnitCategory unitCategory))
             {
-                FamiliarUnlockSystem.ConfiguredCategoryBans.Add(unitCategory);
+              
             }
         }
     }
@@ -66,24 +66,10 @@ internal static class Configuration
 
         for (int i = 0; i < questRewards.Count; i++)
         {
-            QuestSystem.QuestRewards.TryAdd(questRewards[i], rewardAmounts[i]);
+            
         }
     }
-    public static void GetStarterKitItems()
-    {
-        List<int> kitAmounts = [..ParseIntegersFromString(ConfigService.KitQuantities)];
-        List<PrefabGUID> kitPrefabs = [..ParseIntegersFromString(ConfigService.KitPrefabs).Select(itemPrefab => new PrefabGUID(itemPrefab))];
-
-        if (kitPrefabs.Count != kitAmounts.Count)
-        {
-            Core.Log.LogWarning("KitPrefabs and KitQuantities are not the same length, please correct this for predictable behavior when using the kit command!");
-        }
-
-        for (int i = 0; i < kitPrefabs.Count; i++)
-        {
-            MiscCommands.StarterKitItemPrefabGUIDs.TryAdd(kitPrefabs[i], kitAmounts[i]);
-        }
-    }
+   
     public static void GetClassSpellCooldowns()
     {
         foreach (var keyValuePair in Classes.ClassSpellsMap)

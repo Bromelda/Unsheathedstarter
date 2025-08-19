@@ -1,5 +1,5 @@
 ﻿using Bloodcraft.Services;
-using Bloodcraft.Systems.Professions;
+
 using Stunlock.Core;
 using Unity.Mathematics;
 
@@ -84,8 +84,7 @@ internal static class ProfessionFactory
 
         foreach (var profession in professions)
         {
-            if (profession.IsDisabled())
-                professions.Remove(profession);
+           
         }
 
         return string.Join(", ", professions.Select(profession => profession.ToString()));

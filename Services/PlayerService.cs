@@ -74,10 +74,7 @@ internal class PlayerService
                 {
                     bool hasExoPrestiged = PrestigeManager.HasExoPrestiged(steamId);
 
-                    if (hasExoPrestiged && steamId.TryGetPlayerShapeshift(out ShapeshiftType shapeshift))
-                    {
-                        Shapeshifts.ShapeshiftCache.SetShapeshiftBuff(steamId, shapeshift);
-                    }
+                   
                 }
             }
         }
@@ -99,8 +96,7 @@ internal class PlayerService
     {
         _steamIdOnlinePlayerInfoCache.TryRemove(steamId, out _);
 
-        EclipseService.TryRemovePreRegistration(steamId);
-        EclipseService.TryUnregisterUser(steamId);
+       
     }
     public static PlayerInfo GetPlayerInfo(string playerName)
     {

@@ -1,9 +1,9 @@
 ﻿using Bloodcraft.Services;
 using Bloodcraft.Systems.Expertise;
-using Bloodcraft.Systems.Familiars;
+
 using Bloodcraft.Systems.Legacies;
 using Bloodcraft.Systems.Leveling;
-using Bloodcraft.Systems.Quests;
+
 using HarmonyLib;
 using ProjectM;
 using ProjectM.Network;
@@ -75,12 +75,8 @@ internal static class VBloodSystemPatch
                 {
                     BloodSystem.ProcessLegacy(deathEventArgs);
                 }
-                if (_familiars)
-                {
-                    FamiliarLevelingSystem.ProcessFamiliarExperience(playerCharacter, vBlood, steamId, 1f);
-                    FamiliarUnlockSystem.ProcessUnlock(playerCharacter, vBlood);
-                }
-                if (_quests && steamId.TryGetPlayerQuests(out var questData)) QuestSystem.ProcessQuestProgress(questData, vBloodConsumed.Source, 1, user);
+               
+              
             }
         }
         catch (Exception e)

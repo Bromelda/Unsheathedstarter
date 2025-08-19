@@ -10,9 +10,9 @@ using System.Collections.Concurrent;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
-using Shapeshift = Bloodcraft.Interfaces.Shapeshift;
 
-namespace Bloodcraft.Utilities;
+
+namespace Bloodcraft.Utilities;/*
 internal static class Shapeshifts
 {
     static EntityManager EntityManager => Core.EntityManager;
@@ -363,4 +363,4 @@ internal static class Shapeshifts
     {
         return ShapeshiftBuffs[shapeshiftType];
     }
-}
+}*/

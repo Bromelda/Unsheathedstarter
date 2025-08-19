@@ -41,7 +41,7 @@ internal static class ScriptSpawnServerPatch
     static readonly int _maxLevel = ConfigService.MaxLevel;
     static readonly bool _shouldApplyBonusStats = _legacies || _expertise || _classes || _familiars;
 
-    static readonly float _bloodBoltSwarmCooldown = Shapeshifts.GetShapeshiftAbilityCooldown<EvolvedVampire>(_bloodBoltSwarmGroup);
+   
 
     static readonly PrefabGUID _castleManCombatBuff = Buffs.CastleManCombatBuff;
     static readonly PrefabGUID _standardWerewolfBuff = Buffs.StandardWerewolfBuff;
@@ -126,37 +126,33 @@ internal static class ScriptSpawnServerPatch
 
                 switch (buffType)
                 {
+                    
                     case 1:
-                        Shapeshifts.ModifyShapeshiftBuff(buffEntity, buffTarget, prefabGuid);
-                        break;
-                    case 2:
                         buffEntity.Remove<ScriptSpawn>();
                         buffEntity.Remove<Script_ApplyBuffOnAggroListTarget_DataServer>();
                         break;
-                    case 3:
-                        if (_bloodBoltSwarmCooldown != 0f) ServerGameManager.SetAbilityGroupCooldown(buffEntity.GetOwner(), _bloodBoltSwarmGroup, _bloodBoltSwarmCooldown);
-                        break;
-                    case 4 when _shouldApplyBonusStats:
+                   
+                    case 2 when _shouldApplyBonusStats:
                         if (targetIsPlayer) ApplyPlayerBonusStats(buffEntity, buffTarget);
                         if (targetIsFamiliar) ApplyFamiliarBonusStats(buffEntity, buffTarget);
                         break;
-                    case 6 when _leveling && targetIsPlayer:
+                    case 3 when _leveling && targetIsPlayer:
                         buffEntity.With((ref SpellLevel spellLevel) => spellLevel.Level = 0);
                         break;
-                    case 7 when _legacies && BloodSystem.BloodBuffToBloodType.ContainsKey(prefabGuid):
+                    case 4 when _legacies && BloodSystem.BloodBuffToBloodType.ContainsKey(prefabGuid):
                         Buffs.RefreshStats(buffTarget);
                         break;
-                    case 8 when _familiars && owner.IsFamiliar() && owner.IsAllied(buffTarget):
+                    case 5 when _familiars && owner.IsFamiliar() && owner.IsAllied(buffTarget):
                         buffEntity.Destroy();
                         break;
-                    case 9 when _familiars:
+                    case 6 when _familiars:
                         if (buffTarget.TryGetFollowedPlayer(out Entity playerCharacter))
                         {
                             Entity familiar = Familiars.GetActiveFamiliar(playerCharacter);
                             if (familiar.Exists()) Familiars.HandleFamiliarCastleMan(buffEntity);
                         }
                         break;
-                    case 10 when _familiars:
+                    case 7 when _familiars:
                         if (buffTarget.TryGetFollowedPlayer(out playerCharacter))
                         {
                             Entity familiar = Familiars.GetActiveFamiliar(playerCharacter);

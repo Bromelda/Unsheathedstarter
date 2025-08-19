@@ -1,8 +1,8 @@
 using Bloodcraft.Interfaces;
 using Bloodcraft.Resources;
 using Bloodcraft.Services;
-using Bloodcraft.Systems.Professions;
-using Bloodcraft.Systems.Quests;
+
+
 using HarmonyLib;
 using ProjectM;
 using ProjectM.Gameplay.Systems;
@@ -51,7 +51,7 @@ internal static class CreateGameplayEventOnDestroySystemPatch
                     PrefabGUID prefabGuid = PrefabGUID.Empty;
                     Entity target = entity.GetBuffTarget();
 
-                    if (_quests && steamId.TryGetPlayerQuests(out var quests)) QuestSystem.ProcessQuestProgress(quests, _fishingQuestGoal, 1, user);
+                  
 
                     if (target.TryGetBuffer<DropTableBuffer>(out var buffer)
                         && !buffer.IsEmpty)
@@ -65,13 +65,7 @@ internal static class CreateGameplayEventOnDestroySystemPatch
                     if (handler != null)
                     {
                         Profession profession = handler.GetProfessionEnum();
-                        if (profession.IsDisabled()) continue;
-
-                        int multiplier = ProfessionMappings.GetFishingModifier(prefabGuid);
-                        float delay = SCT_DELAY;
-
-                        ProfessionSystem.SetProfession(target, playerCharacter, steamId, BASE_PROFESSION_XP * multiplier, handler, ref delay);
-                        ProfessionSystem.GiveProfessionBonus(target, prefabGuid, playerCharacter, userEntity, user, steamId, handler, delay);
+                       
                     }
                 }
             }

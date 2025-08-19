@@ -8,7 +8,7 @@ using ProjectM.Scripting;
 using Stunlock.Core;
 using Unity.Collections;
 using Unity.Entities;
-using static Bloodcraft.Utilities.Shapeshifts;
+
 
 namespace Bloodcraft.Patches;
 
@@ -53,14 +53,9 @@ internal static class AbilityRunScriptsSystemPatch
                 {
                     PrefabGUID prefabGuid = postCastEndedEvent.AbilityGroup.GetPrefabGuid();
 
-                    if (ShapeshiftRegistry.TryGetByAbilityGroup(prefabGuid, out var shapeshift))
-                    {
-                        if (shapeshift.TryGetCooldown(prefabGuid, out var cooldown))
-                        {
-                            ServerGameManager.SetAbilityGroupCooldown(postCastEndedEvent.Character, prefabGuid, cooldown);
-                        }
-                    }
-                    else if (ClassSpells.ContainsKey(prefabGuid))
+                   
+                    
+                    if (ClassSpells.ContainsKey(prefabGuid))
                     {
                         float cooldown = ClassSpells[prefabGuid].Equals(0) ? Spell_COOLDOWN_FACTOR : (ClassSpells[prefabGuid] + 1) * Spell_COOLDOWN_FACTOR;
                         ServerGameManager.SetAbilityGroupCooldown(postCastEndedEvent.Character, prefabGuid, cooldown);

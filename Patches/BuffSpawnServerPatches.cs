@@ -1,7 +1,7 @@
 ﻿using Bloodcraft.Interfaces;
 using Bloodcraft.Resources;
 using Bloodcraft.Services;
-using Bloodcraft.Systems.Professions;
+
 using Bloodcraft.Utilities;
 using HarmonyLib;
 using ProjectM;
@@ -34,11 +34,11 @@ internal static class BuffSystemSpawnPatches
     static readonly bool _familiarPvP = ConfigService.FamiliarPvP;
     static readonly bool _potionStacking = ConfigService.PotionStacking;
     static readonly bool _professions = ConfigService.ProfessionSystem;
-    static readonly bool _alchemy = !Profession.Alchemy.IsDisabled();
+   
 
     const float FAMILIAR_TRAVEL_DURATION = 7.5f;
     const float MINION_LIFETIME = 30f;
-    const int MAX_PROFESSION_LEVEL = ProfessionSystem.MAX_PROFESSION_LEVEL;
+   
 
     static readonly PrefabGUID _fallenAngel = PrefabGUIDs.CHAR_Paladin_FallenAngel;
     static readonly PrefabGUID _solarus = PrefabGUIDs.CHAR_ChurchOfLight_Paladin_VBlood;
@@ -113,18 +113,8 @@ internal static class BuffSystemSpawnPatches
                             }
                         }
                         break;
-                    case 2 when _trueImmortal && isPlayerTarget: // ExoForm Immortal Handling
-                        if (buffEntity.Has<SpellTarget>())
-                        {
-                            Entity spellTarget = buffEntity.GetSpellTarget();
 
-                            if (!spellTarget.IsVBloodOrGateBoss())
-                            {
-                                Shapeshifts.TrueImmortal(buffEntity, buffTarget);
-                            }
-                        }
-                        break;
-                    case 3 when isPlayerTarget: // Familiar and player has PvE Combat Buff
+                    case 2 when isPlayerTarget: // Familiar and player has PvE Combat Buff
                         Entity familiar = Entity.Null;
                         if (buffTarget.HasBuff(_evolvedVampireBuff)) buffEntity.Remove<SetOwnerRotateTowardsMouse>();
                         if (_familiars && steamId.HasActiveFamiliar())
@@ -135,7 +125,7 @@ internal static class BuffSystemSpawnPatches
                             Familiars.SyncAggro(buffTarget, familiar);
                         }
                         break;
-                    case 4 when _familiars && isPlayerTarget: // Familiars and player has PvP Combat Buff
+                    case 3 when _familiars && isPlayerTarget: // Familiars and player has PvP Combat Buff
                         if (steamId.HasActiveFamiliar())
                         {
                             familiar = Familiars.GetActiveFamiliar(buffTarget);
@@ -151,7 +141,7 @@ internal static class BuffSystemSpawnPatches
                             }
                         }
                         break;
-                    case 5 when _familiars && isPlayerTarget: // Vampiric curse (BloodyPoint)
+                    case 4 when _familiars && isPlayerTarget: // Vampiric curse (BloodyPoint)
                         if (!buffEntity.Has<GameplayEventListeners>())
                         {
                             familiar = Familiars.GetActiveFamiliar(buffTarget);
@@ -167,10 +157,10 @@ internal static class BuffSystemSpawnPatches
                             }
                         }
                         break;
-                    case 7 when _familiars && buffTarget.IsVBloodOrGateBoss(): // Witch pig transformation buff
+                    case 5 when _familiars && buffTarget.IsVBloodOrGateBoss(): // Witch pig transformation buff
                         buffEntity.Destroy();
                         break;
-                    case 8 when isPlayerTarget:
+                    case 6 when isPlayerTarget:
                         if (_familiars && steamId.HasDismissedFamiliar() && Familiars.AutoCallMap.TryRemove(buffTarget, out familiar))
                         {
                             Familiars.CallFamiliar(buffTarget, familiar, buffTarget.GetUser(), steamId);
@@ -180,7 +170,7 @@ internal static class BuffSystemSpawnPatches
                             Buffs.RefreshStats(buffTarget);
                         }
                         break;
-                    case 9 when _familiars:
+                    case 7 when _familiars:
                         if (buffTarget.TryGetFollowedPlayer(out Entity playerCharacter))
                         {
                             familiar = Familiars.GetActiveFamiliar(playerCharacter);
@@ -197,7 +187,7 @@ internal static class BuffSystemSpawnPatches
                             }
                         }
                         break;
-                    case 10 when _familiars:
+                    case 8 when _familiars:
                         if (buffTarget.TryGetFollowedPlayer(out playerCharacter))
                         {
                             if (buffEntity.Has<LifeTime>())
@@ -210,7 +200,7 @@ internal static class BuffSystemSpawnPatches
                             }
                         }
                         break;
-                    case 11:
+                    case 9:
                         if (isPlayerTarget)
                         {
                             if (_potionStacking && !prefabName.Contains("holyresistance", StringComparison.CurrentCultureIgnoreCase))
@@ -219,59 +209,36 @@ internal static class BuffSystemSpawnPatches
                                 if (buffEntity.Has<RemoveBuffOnGameplayEventEntry>()) buffEntity.Remove<RemoveBuffOnGameplayEventEntry>();
                             }
 
-                            if (!_alchemy) continue;
 
-                            if (_professions)
+
+                            if (buffEntity.Has<HealOnGameplayEvent>() && buffEntity.TryGetBuffer<CreateGameplayEventsOnTick>(out var tickBuffer) && !tickBuffer.IsEmpty)
                             {
-                                IProfession handler = ProfessionFactory.GetProfession(buffPrefabGuid);
+                                CreateGameplayEventsOnTick eventsOnTick = tickBuffer[0];
+                               
 
-                                int level = handler.GetProfessionData(steamId).Key;
-                                float bonus = 1 + (level / (float)MAX_PROFESSION_LEVEL);
-
-                                if (buffEntity.Has<LifeTime>())
-                                {
-                                    LifeTime lifeTime = buffEntity.Read<LifeTime>();
-                                    if (lifeTime.Duration != -1) lifeTime.Duration *= bonus;
-                                    buffEntity.Write(lifeTime);
-                                }
-
-                                if (!prefabName.Contains("holyresistance", StringComparison.CurrentCultureIgnoreCase) && buffEntity.TryGetBuffer<ModifyUnitStatBuff_DOTS>(out var statBuffer) && !statBuffer.IsEmpty)
-                                {
-                                    for (int j = 0; j < statBuffer.Length; j++)
-                                    {
-                                        ModifyUnitStatBuff_DOTS statBuff = statBuffer[j];
-                                        statBuff.Value *= 1 + level / (float)MAX_PROFESSION_LEVEL;
-
-                                        statBuffer[j] = statBuff;
-                                    }
-                                }
-
-                                if (buffEntity.Has<HealOnGameplayEvent>() && buffEntity.TryGetBuffer<CreateGameplayEventsOnTick>(out var tickBuffer) && !tickBuffer.IsEmpty)
-                                {
-                                    CreateGameplayEventsOnTick eventsOnTick = tickBuffer[0];
-                                    eventsOnTick.MaxTicks = (int)(eventsOnTick.MaxTicks * bonus);
-
-                                    tickBuffer[0] = eventsOnTick;
-                                }
+                                tickBuffer[0] = eventsOnTick;
                             }
+                        }
 
-                            if (_familiars && !buffPrefabGuid.Equals(_wranglerPotionBuff))
+                        if (_familiars && !buffPrefabGuid.Equals(_wranglerPotionBuff))
+                        {
+                            familiar = Familiars.GetActiveFamiliar(buffTarget);
+
+                            if (familiar.Exists())
                             {
-                                familiar = Familiars.GetActiveFamiliar(buffTarget);
-
-                                if (familiar.Exists())
+                                if (buffEntity.Has<HealOnGameplayEvent>() && familiar.IsDisabled())
                                 {
-                                    if (buffEntity.Has<HealOnGameplayEvent>() && familiar.IsDisabled())
-                                    {
-                                        continue;
-                                    }
-                                    else
-                                    {
-                                        familiar.TryApplyBuff(buffPrefabGuid);
-                                    }
+                                    continue;
+                                }
+                                else
+                                {
+                                    familiar.TryApplyBuff(buffPrefabGuid);
                                 }
                             }
                         }
+                
+            
+      
                         else if (buffTarget.TryGetFollowedPlayer(out playerCharacter))
                         {
                             if (_potionStacking && !prefabName.Contains("holyresistance", StringComparison.CurrentCultureIgnoreCase))
@@ -436,7 +403,7 @@ internal static class BuffSystemSpawnPatches
     static readonly Dictionary<PrefabGUID, Action<BuffSpawnContext>> _buffSpawnActions = new()
     {
         { _gateBossFeedCompleteBuff,   HandleEliteSolarusFinalPhase },   // case 1
-        { _bloodCurseBuff,             HandleTrueImmortal         },     // case 2
+      
         { _pveCombatBuff,              HandlePveCombatBuff        },     // case 3
         { _pvpCombatBuff,              HandlePvpCombatBuff        },     // case 4
         { _combatStanceBuff,           HandleCombatStanceBuff     },     // case 14 (re‑used logic)
@@ -455,17 +422,7 @@ internal static class BuffSystemSpawnPatches
         public ComponentLookup<PlayerCharacter> PlayerLookup { get; init; }
         public ComponentLookup<BlockFeedBuff> BlockFeedLookup { get; init; }
     }
-    static void HandleConsumable(Entity buffEntity, Entity target, PrefabGUID buffGuid, string prefabName, bool targetIsPlayer, ulong steamId)
-    {
-        if (targetIsPlayer)
-        {
-            ApplyConsumableToPlayer(buffEntity, target, buffGuid, prefabName, steamId);
-        }
-        else if (target.TryGetFollowedPlayer(out Entity playerChar))
-        {
-            ApplyConsumableToFollower(buffEntity, playerChar, prefabName);
-        }
-    }
+  
     static void HandleAggroEmote(Entity buffEntity, Entity target)
     {
         if (_familiars && target.TryGetFollowedPlayer(out Entity player) && !GetPlayerBool(player.GetSteamId(), VBLOOD_EMOTES_KEY))
@@ -502,17 +459,7 @@ internal static class BuffSystemSpawnPatches
             }
         }
     }
-    static void HandleTrueImmortal(BuffSpawnContext buff)
-    {
-        if (!_trueImmortal || !buff.TargetIsPlayer) return;
-
-        Entity spellTarget = buff.BuffEntity.GetSpellTarget();
-
-        if (!spellTarget.IsVBloodOrGateBoss())
-        {
-            Shapeshifts.TrueImmortal(buff.BuffEntity, buff.BuffTarget);
-        }
-    }
+    
     static void HandlePveCombatBuff(BuffSpawnContext buff)
     {
         // original case 3
@@ -628,59 +575,7 @@ internal static class BuffSystemSpawnPatches
             ctx.BuffEntity.Destroy();
         }
     }
-    static void ApplyConsumableToPlayer(Entity buffEntity, Entity player, PrefabGUID buffGuid, string prefabName, ulong steamId)
-    {
-        if (_potionStacking && !prefabName.Contains("holyresistance", StringComparison.CurrentCultureIgnoreCase))
-        {
-            buffEntity.Remove<RemoveBuffOnGameplayEvent>();
-            buffEntity.Remove<RemoveBuffOnGameplayEventEntry>();
-        }
-
-        if (_professions)
-        {
-            IProfession alchemyHandler = ProfessionFactory.GetProfession(buffGuid);
-            int level = alchemyHandler.GetProfessionLevel(steamId);
-            float duration = 1 + level / (float)MAX_PROFESSION_LEVEL;
-
-            buffEntity.With((ref LifeTime lifeTime) =>
-            {
-                if (!lifeTime.EndAction.Equals(LifeTimeEndAction.None))
-                {
-                    lifeTime.Duration *= duration;
-                }
-            });
-
-            if (!prefabName.Contains("holyresistance", StringComparison.CurrentCultureIgnoreCase) &&
-                buffEntity.TryGetBuffer<ModifyUnitStatBuff_DOTS>(out var statBuffer) && !statBuffer.IsEmpty)
-            {
-                for (int j = 0; j < statBuffer.Length; ++j)
-                {
-                    var statBuff = statBuffer[j];
-                    statBuff.Value *= duration;
-                    statBuffer[j] = statBuff;
-                }
-            }
-
-            if (buffEntity.Has<HealOnGameplayEvent>() && buffEntity.TryGetBuffer<CreateGameplayEventsOnTick>(out var tickBuffer) && !tickBuffer.IsEmpty)
-            {
-                var eventOnTick = tickBuffer[0];
-                eventOnTick.MaxTicks = (int)(eventOnTick.MaxTicks * duration);
-                tickBuffer[0] = eventOnTick;
-            }
-        }
-
-        if (_familiars && !buffGuid.Equals(_wranglerPotionBuff))
-        {
-            Entity familiar = Familiars.GetActiveFamiliar(player);
-            if (familiar.Exists())
-            {
-                if (buffEntity.Has<HealOnGameplayEvent>() && familiar.IsDisabled())
-                    return; // skip if disabled and heal‑based consumable
-
-                familiar.TryApplyBuff(buffGuid);
-            }
-        }
-    }
+   
     static void ApplyConsumableToFollower(Entity buffEntity, Entity playerCharacter, string prefabName)
     {
         if (_potionStacking && !prefabName.Contains("holyresistance", StringComparison.CurrentCultureIgnoreCase))

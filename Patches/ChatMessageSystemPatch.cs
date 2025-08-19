@@ -35,8 +35,7 @@ internal static class ChatMessageSystemPatch
 
                 if (CheckMAC(chatMessageEvent.MessageText.Value, out string originalMessage))
                 {
-                    EclipseService.HandleClientMessage(originalMessage);
-                    entity.Destroy(true);
+                    
                 }
             }
         }

@@ -128,7 +128,7 @@ internal static class UpdateBuffsBufferDestroyPatch
                     case 1 when _exoForm && isPlayerTarget: // ExoForm Buff
                         ulong steamId = buffTarget.GetSteamId();
                         buffTarget.TryApplyBuff(_gateBossFeedCompleteBuff);
-                        Shapeshifts.UpdatePartialExoFormChargeUsed(entity, steamId);
+                        
                         break;
                     case 2:
                         // Core.Log.LogWarning($"[UpdateBuffsBufferDestroyPatch] Triggering stat refresh - {buffTarget.GetPrefabGuid().GetPrefabName()}");
@@ -143,19 +143,7 @@ internal static class UpdateBuffsBufferDestroyPatch
                             Familiars.TryReturnFamiliar(buffTarget, familiar);
                         }
                         break;
-                    case 4 when isPlayerTarget: // Taunt Emote Buff
-                        User user = buffTarget.GetUser();
-                        steamId = user.PlatformId;
-                        if (GetPlayerBool(steamId, SHAPESHIFT_KEY))
-                        {
-                            if (EmoteSystemPatch.BlockShapeshift.Contains(steamId))
-                            {
-                                EmoteSystemPatch.BlockShapeshift.Remove(steamId);
-                            }
-                            else if (Shapeshifts.CheckExoFormCharge(user, steamId)) ApplyShapeshiftBuff(steamId, buffTarget);
-                            // else ApplyShapeshiftBuff(steamId, buffTarget);
-                        }
-                        break;
+                   
                     case 7 when _prestige && isPlayerTarget: // Prestige Buffs
                         steamId = buffTarget.GetSteamId();
                         int index = PrestigeBuffs.IndexOf(buffPrefabGuid);
@@ -243,13 +231,9 @@ internal static class UpdateBuffsBufferDestroyPatch
     }
     static void ApplyShapeshiftBuff(ulong steamId, Entity playerCharacter)
     {
-        if (!Shapeshifts.ShapeshiftCache.TryGetShapeshiftBuff(steamId, out PrefabGUID shapeshiftBuff))
-        {
-            Core.Log.LogWarning($"Shapeshift buff not found for {steamId}");
-            return;
-        }
+       
 
-        playerCharacter.TryApplyBuff(shapeshiftBuff);
+      
         playerCharacter.TryApplyBuff(_phasingBuff);
         playerCharacter.CastAbility(_gateBossFeedCompleteGroup);
         playerCharacter.TryApplyBuff(_gateBossFeedCompleteBuff);

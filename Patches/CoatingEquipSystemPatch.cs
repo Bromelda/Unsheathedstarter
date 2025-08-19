@@ -1,6 +1,6 @@
 ﻿using Bloodcraft.Interfaces;
 using Bloodcraft.Services;
-using Bloodcraft.Systems.Professions;
+
 using HarmonyLib;
 using ProjectM;
 using ProjectM.WeaponCoating;
