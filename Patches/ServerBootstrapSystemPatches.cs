@@ -370,90 +370,89 @@ internal static class ServerBootstrapSystemPatches
                 {
                     if (!steamId.TryGetPlayerExoFormData(out var _))
                     {
-                        KeyValuePair<DateTime, float> timeEnergyPair = new(DateTime.UtcNow, Shapeshifts.CalculateFormDuration(exoPrestiges));
+
+                    }
+
+                    if (_exoForm && !steamId.TryGetPlayerExoFormData(out var _))
+                    {
+                        KeyValuePair<DateTime, float> timeEnergyPair = new(DateTime.MaxValue, 0f);
                         steamId.SetPlayerExoFormData(timeEnergyPair);
                     }
                 }
 
-                if (_exoForm && !steamId.TryGetPlayerExoFormData(out var _))
+                SetPlayerBool(steamId, SHROUD_KEY, true);
+
+                if (UpdateBuffsBufferDestroyPatch.PrestigeBuffs.Contains(_shroudBuff) && !playerCharacter.HasBuff(_shroudBuff)
+                    && steamId.TryGetPlayerPrestiges(out var prestigeData) && prestigeData.TryGetValue(PrestigeType.Experience, out var experiencePrestiges) && experiencePrestiges > UpdateBuffsBufferDestroyPatch.PrestigeBuffs.IndexOf(_shroudBuff))
                 {
-                    KeyValuePair<DateTime, float> timeEnergyPair = new(DateTime.MaxValue, 0f);
-                    steamId.SetPlayerExoFormData(timeEnergyPair);
+                    Buffs.TryApplyPermanentBuff(playerCharacter, _shroudBuff);
+                }
+                else
+                {
+                    SetPlayerBool(steamId, SHROUD_KEY, false);
                 }
             }
 
-            SetPlayerBool(steamId, SHROUD_KEY, true);
-
-            if (UpdateBuffsBufferDestroyPatch.PrestigeBuffs.Contains(_shroudBuff) && !playerCharacter.HasBuff(_shroudBuff)
-                && steamId.TryGetPlayerPrestiges(out var prestigeData) && prestigeData.TryGetValue(PrestigeType.Experience, out var experiencePrestiges) && experiencePrestiges > UpdateBuffsBufferDestroyPatch.PrestigeBuffs.IndexOf(_shroudBuff))
+            if (_familiars)
             {
-                Buffs.TryApplyPermanentBuff(playerCharacter, _shroudBuff);
-            }
-            else
-            {
-                SetPlayerBool(steamId, SHROUD_KEY, false);
-            }
-        }
-
-        if (_familiars)
-        {
-            if (!steamId.HasActiveFamiliar())
-            {
-                ActiveFamiliarManager.ResetActiveFamiliarData(steamId);
-            }
-
-            if (!steamId.TryGetFamiliarBox(out var _))
-            {
-                steamId.SetFamiliarBox();
-            }
-
-            FamiliarExperienceManager.SaveFamiliarExperienceData(steamId, FamiliarExperienceManager.LoadFamiliarExperienceData(steamId));
-            FamiliarUnlocksManager.SaveFamiliarUnlocksData(steamId, FamiliarUnlocksManager.LoadFamiliarUnlocksData(steamId));
-
-            if (playerCharacter.TryGetBuffer<BuffByItemCategoryCount>(out var buffer) && buffer.IsIndexWithinRange(1))
-            {
-                BuffByItemCategoryCount buffByItemCategoryCount = buffer[1];
-
-                if (buffByItemCategoryCount.ItemCategory.Equals(ItemCategory.Relic))
+                if (!steamId.HasActiveFamiliar())
                 {
-                    buffer.RemoveAt(1);
-                    // Core.Log.LogWarning($"[UpdatePlayerData] - BuffByItemCategoryCount Relic entry removed!");
+                    ActiveFamiliarManager.ResetActiveFamiliarData(steamId);
+                }
+
+                if (!steamId.TryGetFamiliarBox(out var _))
+                {
+                    steamId.SetFamiliarBox();
+                }
+
+                FamiliarExperienceManager.SaveFamiliarExperienceData(steamId, FamiliarExperienceManager.LoadFamiliarExperienceData(steamId));
+                FamiliarUnlocksManager.SaveFamiliarUnlocksData(steamId, FamiliarUnlocksManager.LoadFamiliarUnlocksData(steamId));
+
+                if (playerCharacter.TryGetBuffer<BuffByItemCategoryCount>(out var buffer) && buffer.IsIndexWithinRange(1))
+                {
+                    BuffByItemCategoryCount buffByItemCategoryCount = buffer[1];
+
+                    if (buffByItemCategoryCount.ItemCategory.Equals(ItemCategory.Relic))
+                    {
+                        buffer.RemoveAt(1);
+                        // Core.Log.LogWarning($"[UpdatePlayerData] - BuffByItemCategoryCount Relic entry removed!");
+                    }
+                }
+
+                if (playerCharacter.HasBuff(_relicDebuff))
+                {
+                    playerCharacter.TryRemoveBuff(buffPrefabGuid: _relicDebuff);
                 }
             }
 
-            if (playerCharacter.HasBuff(_relicDebuff))
+            if (_classes)
             {
-                playerCharacter.TryRemoveBuff(buffPrefabGuid: _relicDebuff);
+                if (!steamId.TryGetPlayerSpells(out var _))
+                {
+                    steamId.SetPlayerSpells((0, 0, 0));
+                }
             }
-        }
 
-        if (_classes)
-        {
-            if (!steamId.TryGetPlayerSpells(out var _))
+            if (exists)
             {
-                steamId.SetPlayerSpells((0, 0, 0));
+                PlayerInfo playerInfo = new()
+                {
+                    CharEntity = playerCharacter,
+                    UserEntity = userEntity,
+                    User = user
+                };
+
+                HandleConnection(steamId, playerInfo);
+
+                if (!playerCharacter.HasBuff(_bonusStatsBuff))
+                {
+                    Buffs.RefreshStats(playerInfo.CharEntity);
+                }
             }
-        }
-
-        if (exists)
-        {
-            PlayerInfo playerInfo = new()
+            else if (Core.Eclipsed)
             {
-                CharEntity = playerCharacter,
-                UserEntity = userEntity,
-                User = user
-            };
 
-            HandleConnection(steamId, playerInfo);
-
-            if (!playerCharacter.HasBuff(_bonusStatsBuff))
-            {
-                Buffs.RefreshStats(playerInfo.CharEntity);
             }
-        }
-        else if (Core.Eclipsed)
-        {
-            EclipseService.HandlePreRegistration(steamId);
         }
     }
     public static void UnbindFamiliarOnUserDisconnected(User user, Entity playerCharacter)

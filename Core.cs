@@ -7,9 +7,9 @@ using Bloodcraft.Resources;
 using Bloodcraft.Services;
 using Bloodcraft.Systems;
 using Bloodcraft.Systems.Expertise;
-using Bloodcraft.Systems.Familiars;
+
 using Bloodcraft.Systems.Leveling;
-using Bloodcraft.Systems.Quests;
+
 using Bloodcraft.Utilities;
 using Il2CppInterop.Runtime;
 using ProjectM;
@@ -112,11 +112,11 @@ internal static class Core
 
         _ = new PlayerService();
         _ = new LocalizationService();
-        if (Eclipsed) _ = new EclipseService();
+       
 
         if (ConfigService.ExtraRecipes) Recipes.ModifyRecipes();
 
-        if (ConfigService.StarterKit) Configuration.GetStarterKitItems();
+       
 
         if (ConfigService.PrestigeSystem) Buffs.GetPrestigeBuffs();
 
@@ -131,20 +131,14 @@ internal static class Core
 
         if (ConfigService.ExpertiseSystem) DeathEventListenerSystemPatch.OnDeathEventHandler += WeaponSystem.OnUpdate;
 
-        if (ConfigService.QuestSystem)
-        {
-            _ = new QuestService();
-            DeathEventListenerSystemPatch.OnDeathEventHandler += QuestSystem.OnUpdate;
-        }
+       
 
         if (ConfigService.FamiliarSystem)
         {
             Configuration.GetExcludedFamiliars();
-            if (!ConfigService.LevelingSystem) DeathEventListenerSystemPatch.OnDeathEventHandler += FamiliarLevelingSystem.OnUpdate;
-            DeathEventListenerSystemPatch.OnDeathEventHandler += FamiliarUnlockSystem.OnUpdate;
-
-            _ = new BattleService();
-            _ = new FamiliarService();
+           
+           
+           
         }
 
         if (ConfigService.ProfessionSystem)

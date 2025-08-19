@@ -1,7 +1,7 @@
 ﻿using Bloodcraft.Interfaces;
 using Bloodcraft.Services;
 using Bloodcraft.Systems.Expertise;
-using Bloodcraft.Systems.Familiars;
+
 using Bloodcraft.Utilities;
 using ProjectM;
 using Stunlock.Core;
@@ -75,7 +75,7 @@ internal static class LevelingSystem
         {
             ulong steamId = playerCharacter.GetSteamId();
 
-            if (_familiars) FamiliarLevelingSystem.ProcessFamiliarExperience(playerCharacter, target, steamId, groupMultiplier);
+           
 
             int currentLevel = steamId.TryGetPlayerExperience(out var xpData) ? xpData.Key : 0;
             bool maxLevel = currentLevel >= _maxPlayerLevel;

@@ -75,6 +75,6 @@ internal static class LinkMinionToOwnerOnSpawnSystemPatch
             FamiliarMinions[familiar].Add(minion);
         }
 
-        Familiars.NothingLivesForever(minion, MINION_LIFETIME);
+      
     }
 }

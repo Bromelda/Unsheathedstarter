@@ -1,11 +1,11 @@
 ﻿using Bloodcraft.Interfaces;
 using Bloodcraft.Resources;
 using Bloodcraft.Systems.Expertise;
-using Bloodcraft.Systems.Familiars;
+
 using Bloodcraft.Systems.Legacies;
 using Bloodcraft.Systems.Leveling;
-using Bloodcraft.Systems.Professions;
-using Bloodcraft.Systems.Quests;
+
+
 using Bloodcraft.Utilities;
 using ProjectM;
 using ProjectM.Shared;
@@ -28,7 +28,7 @@ using static Bloodcraft.Services.PlayerService;
 using static Bloodcraft.Systems.Leveling.ClassManager;
 using static Bloodcraft.Utilities.Familiars;
 using static Bloodcraft.Utilities.Misc;
-using static Bloodcraft.Utilities.Shapeshifts;
+
 using WeaponType = Bloodcraft.Interfaces.WeaponType;
 
 namespace Bloodcraft.Services;
@@ -223,32 +223,8 @@ internal static class DataService
 
         return _playerBindingIndex.TryGetValue(steamId, out index);
     }
-    public static bool TryGetPlayerShapeshift(this ulong steamId, out ShapeshiftType shapeshift)
-    {
-        shapeshift = default;
-
-        if (steamId.TryGetPlayerInfo(out PlayerInfo playerInfo))
-        {
-            Entity playerCharacter = playerInfo.CharEntity;
-            BagHolder bagHolder = playerCharacter.Read<BagHolder>();
-            int bagInstanceIndex = bagHolder.BagInstance2.InventoryIndex;
-
-            foreach (var kvp in ShapeshiftBuffs)
-            {
-                if (kvp.Value.GuidHash == bagInstanceIndex)
-                {
-                    shapeshift = kvp.Key;
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-    public static bool TryGetPlayerQuests(this ulong steamId, out Dictionary<QuestSystem.QuestType, (QuestSystem.QuestObjective Objective, int Progress, DateTime LastReset)> quests)
-    {
-        return _playerQuests.TryGetValue(steamId, out quests);
-    }
+    
+   
     public static void SetPlayerExperience(this ulong steamId, KeyValuePair<int, float> data)
     {
         _playerExperience[steamId] = data;
@@ -512,27 +488,8 @@ internal static class DataService
 
         _playerBindingIndex[steamId] = index;
     }
-    public static void SetPlayerQuests(this ulong steamId, Dictionary<QuestSystem.QuestType, (QuestSystem.QuestObjective Objective, int Progress, DateTime LastReset)> data)
-    {
-        _playerQuests[steamId] = data;
-        SavePlayerQuests();
-    }
-    public static void SetPlayerShapeshift(this ulong steamId, ShapeshiftType shapeshiftType)
-    {
-        if (!ShapeshiftBuffs.TryGetValue(shapeshiftType, out PrefabGUID shapeshiftBuff))
-        {
-            Core.Log.LogWarning($"[DataService.SetPlayerShapeshift] ShapeshiftType {shapeshiftType} not found in ShapeshiftBuffs!");
-            return;
-        }
-        else if (steamId.TryGetPlayerInfo(out PlayerInfo playerInfo))
-        {
-            Entity playerCharacter = playerInfo.CharEntity;
 
-            playerCharacter.HasWith((ref BagHolder bagHolder) => bagHolder.BagInstance2.InventoryIndex = shapeshiftBuff.GuidHash);
 
-            ShapeshiftCache.SetShapeshiftBuff(steamId, shapeshiftType);
-        }
-    }
     public static class PlayerDictionaries
     {
         // exoform data
@@ -606,8 +563,8 @@ internal static class DataService
         public static List<ulong> _ignoreSharedExperience = [];
 
         // quests data
-        public static ConcurrentDictionary<ulong, Dictionary<QuestSystem.QuestType, (QuestSystem.QuestObjective Objective, int Progress, DateTime LastReset)>> _playerQuests = [];
     }
+    
     public static class PlayerPersistence
     {
         static readonly JsonSerializerOptions _jsonOptions = new()
@@ -862,7 +819,7 @@ internal static class DataService
         // load methods
         public static void LoadPlayerExperience() => LoadData(ref _playerExperience, "Experience");
         public static void LoadPlayerRestedXP() => LoadData(ref _playerRestedXP, "RestedXP");
-        public static void LoadPlayerQuests() => LoadData(ref _playerQuests, "Quests");
+       
         public static void LoadPlayerClasses() => LoadData(ref _playerClass, "Classes");
         public static void LoadPlayerPrestiges() => LoadData(ref _playerPrestiges, "Prestiges");
         public static void LoadPlayerExoFormData() => LoadData(ref _playerExoFormData, "ExoFormData");
@@ -910,7 +867,7 @@ internal static class DataService
         // save methods
         public static void SavePlayerExperience() => SaveData(_playerExperience, "Experience");
         public static void SavePlayerRestedXP() => SaveData(_playerRestedXP, "RestedXP");
-        public static void SavePlayerQuests() => SaveData(_playerQuests, "Quests");
+       
         public static void SavePlayerClasses() => SaveData(_playerClass, "Classes");
         public static void SavePlayerPrestiges() => SaveData(_playerPrestiges, "Prestiges");
         public static void SavePlayerExoFormData() => SaveData(_playerExoFormData, "ExoFormData");
@@ -1240,17 +1197,17 @@ internal static class DataService
 
                     PrefabGUID famPrefab = new(famKey);
                     string famName = famPrefab.GetLocalizedName();
-                    string colorCode = "<color=#FF69B4>";
+                    
 
-                    int level = FamiliarLevelingSystem.GetFamiliarExperience(steamId, famKey).Key;
+                  
                     int prestiges = prestigeData.FamiliarPrestige.ContainsKey(famKey) ? prestigeData.FamiliarPrestige[famKey] : 0;
 
-                    if (buffsData.FamiliarBuffs.ContainsKey(famKey) && FamiliarUnlockSystem.ShinyBuffColorHexes.TryGetValue(new(buffsData.FamiliarBuffs[famKey][0]), out var hexColor))
+                    
                     {
-                        colorCode = $"<color={hexColor}>";
+                        
                     }
 
-                    familiars.Add($"<color=white>{battleGroup.Familiars.IndexOf(famKey) + 1}</color>: <color=green>{famName}</color>{(buffsData.FamiliarBuffs.ContainsKey(famKey) ? $"{colorCode}*</color>" : "")} [<color=white>{level}</color>][<color=#90EE90>{prestiges}</color>]");
+                   
                 }
             }
         }
@@ -1697,8 +1654,7 @@ internal static class DataService
                     Entity equipmentEntity = addItemResponse.NewEntity;
                     int durability = equipment.Durability;
 
-                    if (equipmentEntity.Exists()) EquipmentQualityManager.ApplyFamiliarEquipmentStats(professionLevel, durability, equipmentEntity);
-                    // Core.Log.LogWarning($"[EquipFamiliar] Equipment Entity exists: {equipmentEntity.Exists()}, name: {equipmentPrefabGuid.GetPrefabName()}, durability: {durability}");
+                   
                 }
             }
             public static List<EquipmentBaseV2> UnequipFamiliar(Entity playerCharacter)
@@ -1717,15 +1673,14 @@ internal static class DataService
                         {
                             Entity equipmentEntity = servantEquipment.GetEquipmentEntity(equipmentType).GetEntityOnServer();
                             PrefabGUID equipmentPrefabGuid = servantEquipment.GetEquipmentItemId(equipmentType);
-                            int professionLevel = professions ? EquipmentQualityManager.CalculateProfessionLevelOfEquipmentFromMaxDurability(equipmentEntity) : 0;
-
+                           
                             if (!equipmentEntity.IsAncestralWeapon())
                             {
                                 familiarEquipment.Add(
                                     new StandardEquipmentV2
                                     {
                                         Equipment = equipmentPrefabGuid.GuidHash,
-                                        Quality = professionLevel,
+                                       
                                         Durability = (int)equipmentEntity.GetDurability()
                                     });
                             }
@@ -1753,16 +1708,16 @@ internal static class DataService
                         {
                             Entity equipmentEntity = servantEquipment.GetEquipmentEntity(equipmentType).GetEntityOnServer();
                             PrefabGUID equipmentPrefabGuid = servantEquipment.GetEquipmentItemId(equipmentType);
-                            int professionLevel = professions
-                                ? EquipmentQualityManager.CalculateProfessionLevelOfEquipmentFromMaxDurability(equipmentEntity)
-                                : 0;
+                           
+                                
+                                 ;
 
                             if (!equipmentEntity.IsAncestralWeapon())
                             {
                                 familiarEquipment.Add(new StandardEquipmentV2
                                 {
                                     Equipment = equipmentPrefabGuid.GuidHash,
-                                    Quality = professionLevel,
+                                   
                                     Durability = (int)equipmentEntity.GetDurability()
                                 });
                             }
@@ -2062,10 +2017,7 @@ public static FamiliarEquipmentDataV2 LoadFamiliarEquipment(ulong steamId)
                 LoadPlayerClasses();
             }
 
-            if (ConfigService.QuestSystem)
-            {
-                LoadPlayerQuests();
-            }
+           
 
             if (ConfigService.LevelingSystem)
             {

@@ -1,14 +1,14 @@
 using Bloodcraft.Services;
-using Bloodcraft.Systems.Familiars;
+
 using Bloodcraft.Systems.Legacies;
-using Bloodcraft.Systems.Professions;
+
 using Bloodcraft.Utilities;
 using HarmonyLib;
 using ProjectM;
 using Unity.Collections;
 using Unity.Entities;
 using static Bloodcraft.Services.DataService.FamiliarPersistence;
-using static Bloodcraft.Systems.Familiars.FamiliarBindingSystem;
+
 using static Bloodcraft.Utilities.Familiars;
 
 namespace Bloodcraft.Patches;
@@ -56,8 +56,8 @@ internal static class DeathEventListenerSystemPatch
             {
                 DeathEvent deathEvent = deathEvents[i];
 
-                if (!ValidateTarget(deathEvent, ref blockFeedBuffLookup, ref traderLookup, ref unitLevelLookup, ref vBloodConsumeSourceLookup)) continue;
-                else if (movementLookup.HasComponent(deathEvent.Died))
+               
+                 if (movementLookup.HasComponent(deathEvent.Died))
                 {
                     Entity deathSource = ValidateSource(deathEvent.Killer);
 
@@ -78,7 +78,7 @@ internal static class DeathEventListenerSystemPatch
                         {
                             if (_allowMinions)
                             {
-                                FamiliarUnlockSystem.OnUpdate(null, deathArgs);
+                              
                             }
 
                             continue;
@@ -95,7 +95,7 @@ internal static class DeathEventListenerSystemPatch
                 }
                 else if (_professions && deathEvent.Killer.IsPlayer())
                 {
-                    ProfessionSystem.UpdateProfessions(deathEvent.Killer, deathEvent.Died);
+
                 }
             }
         }
@@ -115,81 +115,10 @@ internal static class DeathEventListenerSystemPatch
 
         return deathSource;
     }
-    static bool ValidateTarget(DeathEvent deathEvent, ref ComponentLookup<BlockFeedBuff> blockFeedBuffLookup,
-        ref ComponentLookup<Trader> traderLookup, ref ComponentLookup<UnitLevel> unitLevelLookup,
-        ref ComponentLookup<VBloodConsumeSource> vBloodConsumeSourceLookup)
-    {
-        if (deathEvent.Killer == deathEvent.Died) return false;
-        else if (_familiars && deathEvent.Died.TryGetFollowedPlayer(out Entity playerCharacter))
-        {
-            ulong steamId = playerCharacter.GetSteamId();
-            bool hasActive = steamId.HasActiveFamiliar();
+   
 
-            if (hasActive)
-            {
-                Entity familiar = GetActiveFamiliar(playerCharacter);
 
-                if (familiar.Equals(deathEvent.Died))
-                {
-                    // FamiliarEquipmentManager.UnequipFamiliar(GetFamiliarServant(playerCharacter));
-                    /*
-                    Entity familiarServant = GetFamiliarServant(playerCharacter);
-                    Entity servantCoffin = familiarServant.TryGetComponent(out ServantConnectedCoffin connectedCoffin) ? connectedCoffin.CoffinEntity.GetEntityOnServer() : Entity.Null;
 
-                    if (servantCoffin.Exists())
-                    {
-                        servantCoffin.With((ref ServantCoffinstation coffinStation) =>
-                        {
-                            coffinStation.ConnectedServant._Entity = Entity.Null;
-                        });
 
-                        servantCoffin.Destroy();
-                    }
-
-                    familiarServant.Remove<Disabled>();
-                    familiarServant.Destroy();
-                    */
-
-                    Entity familiarServant = GetFamiliarServant(playerCharacter);
-                    DestroyFamiliarServant(familiarServant);
-
-                    ActiveFamiliarManager.ResetActiveFamiliarData(steamId);
-                }
-            }
-
-            return false;
         }
-        else if (PlayerBattleFamiliars.Any() && PlayerBattleFamiliars.FirstOrDefault(kvp => kvp.Value.Contains(deathEvent.Died)) is var match && match.Key != default)
-        {
-            ulong ownerId = match.Key;
-
-            PlayerBattleFamiliars[ownerId].Remove(deathEvent.Died);
-            if (LinkMinionToOwnerOnSpawnSystemPatch.FamiliarMinions.ContainsKey(deathEvent.Died)) HandleFamiliarMinions(deathEvent.Died);
-
-            if (!PlayerBattleFamiliars[ownerId].Any() && BattleService.Matchmaker.MatchPairs.TryGetMatch(ownerId, out var matchPair))
-            {
-                ulong pairedId = matchPair.Item1 == ownerId ? matchPair.Item2 : matchPair.Item1;
-
-                if (PlayerBattleFamiliars[pairedId].Any())
-                {
-                    foreach (Entity familiar in PlayerBattleFamiliars[pairedId])
-                    {
-                        if (LinkMinionToOwnerOnSpawnSystemPatch.FamiliarMinions.ContainsKey(familiar)) HandleFamiliarMinions(familiar);
-                        if (familiar.Exists()) familiar.Destroy();
-                    }
-
-                    PlayerBattleFamiliars[pairedId].Clear();
-                    BattleService.Matchmaker.HandleMatchCompletion(matchPair, pairedId);
-                }
-            }
-
-            return false;
-        }
-        else if (vBloodConsumeSourceLookup.HasComponent(deathEvent.Died)
-            || blockFeedBuffLookup.HasComponent(deathEvent.Died)
-            || traderLookup.HasComponent(deathEvent.Died)
-            || !unitLevelLookup.HasComponent(deathEvent.Died)) return false;
-
-        return true;
-    }
-}
+    

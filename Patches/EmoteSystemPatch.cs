@@ -11,7 +11,7 @@ using Unity.Entities;
 using static Bloodcraft.Services.DataService.FamiliarPersistence.FamiliarEquipmentManager;
 using static Bloodcraft.Utilities.Familiars;
 using static Bloodcraft.Utilities.Misc.PlayerBoolsManager;
-using static Bloodcraft.Utilities.Shapeshifts;
+
 using User = ProjectM.Network.User;
 
 namespace Bloodcraft.Patches;
@@ -58,14 +58,13 @@ internal static class EmoteSystemPatch
         { _waveAbilityGroup, CallDismiss },
         { _saluteAbilityGroup, CombatMode },
         { _clapAbilityGroup, BindUnbind },
-        { _beckonAbilityGroup, InteractMode },
-        { _tauntAbilityGroup, HandleShapeshift }
+        { _beckonAbilityGroup, InteractMode }
+
     };
 
     static readonly Dictionary<PrefabGUID, Action<(ulong, ulong)>> _matchActions = new()
     {
-        { _yesAbilityGroup, AcceptBattle },
-        { _noAbilityGroup, DeclineBattle }
+       
     };
 
     public static readonly HashSet<ulong> BlockShapeshift = [];
@@ -122,29 +121,9 @@ internal static class EmoteSystemPatch
             entities.Dispose();
         }
     }
-    static void HandleShapeshift(User user, Entity playerCharacter, ulong steamId)
-    {
-        if (!ShapeshiftCache.TryGetShapeshiftBuff(steamId, out PrefabGUID shapeshiftBuff))
-        {
-            BlockShapeshift.Add(steamId);
-            LocalizationService.HandleServerReply(EntityManager, user, "Select a form you've unlocked first! ('<color=white>.prestige sf [<color=orange>EvolvedVampire|CorruptedSerpent</color>]</color>')");
-            return;
-        }
 
-        if (!playerCharacter.HasBuff(shapeshiftBuff))
-        {
-            if (playerCharacter.TryApplyAndGetBuff(_phasingBuff, out Entity buffEntity) && buffEntity.Has<BuffModificationFlagData>())
-            {
-                buffEntity.Remove<BuffModificationFlagData>();
-            }
-        }
-        else if (playerCharacter.TryGetBuff(shapeshiftBuff, out Entity buffEntity))
-        {
-            BlockShapeshift.Add(steamId);
-            playerCharacter.TryApplyBuff(_gateBossFeedCompleteBuff);
-            buffEntity.Destroy();
-        }
-    }
+
+
     public static void BindUnbind(User user, Entity playerCharacter, ulong steamId)
     {
         Entity familiar = GetActiveFamiliar(playerCharacter);
@@ -288,14 +267,6 @@ internal static class EmoteSystemPatch
             }
         }
     }
-    static void AcceptBattle((ulong, ulong) match)
-    {
-        BattleService.Matchmaker.QueueMatch(match);
-        BattleChallenges.Remove(match);
-    }
-    static void DeclineBattle((ulong, ulong) match)
-    {
-        BattleService.NotifyBothPlayers(match.Item1, match.Item2, "The challenge has been declined.");
-        BattleChallenges.Remove(match);
-    }
 }
+    
+    

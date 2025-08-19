@@ -1,8 +1,8 @@
 ﻿using Bloodcraft.Interfaces;
 using Bloodcraft.Resources;
 using Bloodcraft.Services;
-using Bloodcraft.Systems.Professions;
-using Bloodcraft.Systems.Quests;
+
+
 using HarmonyLib;
 using ProjectM;
 using ProjectM.Network;
@@ -102,7 +102,7 @@ internal static class ReactToInventoryChangedSystemPatch
 
                         if (StatChangeSystemPatch.LastDamageTime.TryGetValue(questUser.PlatformId, out DateTime lastDamageTime) && (DateTime.UtcNow - lastDamageTime).TotalSeconds < 0.1f)
                         {
-                            if (questUser.PlatformId.TryGetPlayerQuests(out var quests)) QuestSystem.ProcessQuestProgress(quests, inventoryChangedEvent.Item, inventoryChangedEvent.Amount, questUser);
+                           
                         }
                     }
                     else if (inventoryConnection.InventoryOwner.TryGetComponent(out UserOwner userOwner) && userOwner.Owner.GetEntityOnServer().TryGetComponent(out User user))
@@ -153,66 +153,9 @@ internal static class ReactToInventoryChangedSystemPatch
                                 if (jobs == 0) craftingJobs.Remove(itemPrefabGuid);
                                 else craftingJobs[itemPrefabGuid] = jobs;
 
-                                if (_quests && steamId.TryGetPlayerQuests(out var quests)) QuestSystem.ProcessQuestProgress(quests, itemPrefabGuid, 1, user);
+                               
 
-                                if (_professions)
-                                {
-                                    float professionXP = BASE_PROFESSION_XP * ProfessionMappings.GetTierMultiplier(itemPrefabGuid);
-                                    float delay = SCT_DELAY;
-
-                                    if (itemName.Contains("Elixir")) professionXP *= 2f;
-
-                                    // Core.Log.LogWarning($"Profession Crafting - {itemPrefabGuid.GetPrefabName()}");
-                                    IProfession handler = ProfessionFactory.GetProfession(itemPrefabGuid);
-
-                                    if (handler == null || handler.GetProfessionEnum().IsDisabled()) continue;
-
-                                    switch (handler)
-                                    {
-                                        case BlacksmithingProfession:
-                                            ProfessionSystem.SetProfession(inventoryConnection.InventoryOwner, user.LocalCharacter.GetEntityOnServer(), steamId, professionXP, handler, ref delay);
-                                            EquipmentQualityManager.ApplyPlayerEquipmentStats(steamId, itemEntity);
-                                            break;
-                                        case AlchemyProfession:
-                                            if (itemEntity.TryGetComponent(out StoredBlood storedBlood))
-                                            {
-                                                bool merlot = itemName.Contains("Bloodwine");
-                                                float alchemyMultiplier;
-
-                                                if (merlot)
-                                                {
-                                                    alchemyMultiplier = 5f;
-                                                }
-                                                else
-                                                {
-                                                    alchemyMultiplier = 2.5f;
-                                                }
-
-                                                float bloodQualityBonus = 1f + (storedBlood.BloodQuality / 100f);
-                                                alchemyMultiplier += bloodQualityBonus;
-                                                professionXP *= alchemyMultiplier;
-                                            }
-                                            if (itemPrefabGuid.Equals(_onyxTear))
-                                            {
-                                                professionXP *= ONYX_TEAR_FACTOR;
-                                            }
-                                            else professionXP *= ALCHEMY_FACTOR;
-                                            ProfessionSystem.SetProfession(inventoryConnection.InventoryOwner, user.LocalCharacter.GetEntityOnServer(), steamId, professionXP, handler, ref delay);
-                                            break;
-                                        case EnchantingProfession:
-                                            ProfessionSystem.SetProfession(inventoryConnection.InventoryOwner, user.LocalCharacter.GetEntityOnServer(), steamId, professionXP, handler, ref delay);
-                                            EquipmentQualityManager.ApplyPlayerEquipmentStats(steamId, itemEntity);
-                                            break;
-                                        case TailoringProfession:
-                                            ProfessionSystem.SetProfession(inventoryConnection.InventoryOwner, user.LocalCharacter.GetEntityOnServer(), steamId, professionXP, handler, ref delay);
-                                            EquipmentQualityManager.ApplyPlayerEquipmentStats(steamId, itemEntity);
-                                            break;
-                                        default:
-                                            break;
-                                    }
-                                }
-
-                                break;
+                                
                             }
                         }
                     }

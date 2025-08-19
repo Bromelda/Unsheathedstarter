@@ -21,8 +21,7 @@ using static Bloodcraft.Services.DataService.FamiliarPersistence.FamiliarExperie
 using static Bloodcraft.Services.DataService.FamiliarPersistence.FamiliarPrestigeManager;
 using static Bloodcraft.Services.DataService.FamiliarPersistence.FamiliarUnlocksManager;
 using static Bloodcraft.Services.PlayerService;
-using static Bloodcraft.Systems.Familiars.FamiliarBindingSystem;
-using static Bloodcraft.Systems.Familiars.FamiliarUnlockSystem;
+
 using static Bloodcraft.Utilities.Familiars.ActiveFamiliarManager;
 using static Bloodcraft.Utilities.Misc.PlayerBoolsManager;
 
@@ -409,7 +408,7 @@ internal static class Familiars
 
         if (distance >= 25f)
         {
-            PreventDisableFamiliar(familiar);
+            
             ReturnFamiliar(playerPosition, familiar);
         }
 
@@ -473,7 +472,7 @@ internal static class Familiars
     public static void CallFamiliar(Entity playerCharacter, Entity familiar, User user, ulong steamId)
     {
         familiar.Remove<Disabled>();
-        PreventDisableFamiliar(familiar);
+       
 
         float3 position = playerCharacter.GetPosition();
         ReturnFamiliar(position, familiar);
@@ -516,7 +515,7 @@ internal static class Familiars
             }
         }
 
-        PreventDisableFamiliar(familiar);
+      
         familiar.Add<Disabled>();
 
         UpdateActiveFamiliarDismissed(steamId, true);
@@ -530,28 +529,15 @@ internal static class Familiars
         {
             PrefabGUID shinyBuff = new(buffsData.FamiliarBuffs[familiarId].FirstOrDefault());
 
-            if (ShinyBuffSpellSchools.TryGetValue(shinyBuff, out string spellSchool) && familiar.TryGetBuffStacks(shinyBuff, out Entity _, out int stacks))
+           
             {
-                return $"{spellSchool}[<color=white>{stacks}</color>]";
+               
             }
         }
 
         return string.Empty;
     }
-    public static void NothingLivesForever(this Entity unit, float duration = FAMILIAR_LIFETIME)
-    {
-        if (unit.TryApplyAndGetBuff(_inkCrawlerDeathBuff, out Entity buffEntity))
-        {
-            buffEntity.With((ref LifeTime lifeTime) => lifeTime.Duration = duration);
-
-            PrefabGUID unitPrefabGuid = unit.GetPrefabGuid();
-
-            if ((unitPrefabGuid.Equals(_spiritDouble) || unitPrefabGuid.Equals(_highlordGroundSword)) && unit.Has<Immortal>())
-            {
-                unit.With((ref Immortal immortal) => immortal.IsImmortal = false);
-            }
-        }
-    }
+  
     public static void DisableAggro(Entity familiar)
     {
         if (familiar.Has<AggroConsumer>())
@@ -623,7 +609,7 @@ internal static class Familiars
                     return;
                 }
 
-                InstantiateFamiliarRoutine(user, playerCharacter, famKeys[boxIndex - 1]).Start();
+               
             }
             else if (boxIndex == -1)
             {
@@ -636,7 +622,7 @@ internal static class Familiars
             else
             {
                 steamId.SetBindingIndex(boxIndex);
-                InstantiateFamiliarRoutine(user, playerCharacter, famKeys[boxIndex - 1]).Start();
+               
             }
         }
         else
@@ -695,9 +681,9 @@ internal static class Familiars
 
         if (buffsData.FamiliarBuffs.ContainsKey(famKey))
         {
-            if (ShinyBuffColorHexes.TryGetValue(new(buffsData.FamiliarBuffs[famKey].First()), out var hexColor))
+           
             {
-                shinyHexColor = $"<color={hexColor}>";
+                
             }
         }
 
@@ -831,10 +817,9 @@ internal static class Familiars
     {
         if (buffsData.FamiliarBuffs.ContainsKey(familiarId))
         {
-            if (ShinyBuffColorHexes.TryGetValue(new(buffsData.FamiliarBuffs[familiarId].FirstOrDefault()), out string hexColor))
+           
             {
-                string colorCode = string.IsNullOrEmpty(hexColor) ? $"<color={hexColor}>" : string.Empty;
-                return $"<color=green>{new PrefabGUID(familiarId).GetLocalizedName()}</color>{colorCode}*</color>";
+               
             }
         }
 
@@ -920,7 +905,7 @@ internal static class Familiars
             SaveFamiliarPrestigeData(steamId, prestigeData);
 
             Entity familiar = GetActiveFamiliar(playerCharacter);
-            ModifyUnitStats(familiar, xpData.FamiliarExperience[familiarId].Key, steamId, familiarId);
+           
 
             LocalizationService.HandleReply(ctx, $"Your familiar has prestiged [<color=#90EE90>{prestigeLevel}</color>]; the accumulated knowledge allowed them to retain their level!");
 
@@ -946,7 +931,7 @@ internal static class Familiars
 
         try
         {
-            HandleModifications(user, playerCharacter, familiar);
+           
         }
         catch (Exception ex)
         {

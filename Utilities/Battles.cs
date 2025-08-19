@@ -5,7 +5,6 @@ using static Bloodcraft.Services.DataService.FamiliarPersistence;
 using static Bloodcraft.Services.DataService.FamiliarPersistence.FamiliarBuffsManager;
 using static Bloodcraft.Services.DataService.FamiliarPersistence.FamiliarPrestigeManager;
 using static Bloodcraft.Services.PlayerService;
-using static Bloodcraft.Systems.Familiars.FamiliarUnlockSystem;
 using static Bloodcraft.Core;
 using System.Reflection;
 
@@ -58,18 +57,16 @@ internal static class Battles
 
             PrefabGUID famPrefab = new(famKey);
             string famName = famPrefab.GetLocalizedName();
-            string colorCode = "<color=#FF69B4>"; // Default color for the asterisk
+           
 
-            int level = Systems.Familiars.FamiliarLevelingSystem.GetFamiliarExperience(steamId, famKey).Key;
-            int prestiges = 0;
-
+           
             // Check if the familiar has buffs and update the color based on RandomVisuals
             if (buffsData.FamiliarBuffs.ContainsKey(famKey))
             {
                 // Look up the color from the RandomVisuals dictionary if it exists
-                if (ShinyBuffColorHexes.TryGetValue(new(buffsData.FamiliarBuffs[famKey][0]), out var hexColor))
+          
                 {
-                    colorCode = $"<color={hexColor}>";
+                   
                 }
             }
 
@@ -80,10 +77,10 @@ internal static class Battles
             }
             else
             {
-                prestiges = prestigeData.FamiliarPrestige[famKey];
+               
             }
 
-            familiars.Add($"<color=white>{battleGroup.IndexOf(famKey) + 1}</color>: <color=green>{famName}</color>{(buffsData.FamiliarBuffs.ContainsKey(famKey) ? $"{colorCode}*</color>" : "")} [<color=white>{level}</color>][<color=#90EE90>{prestiges}</color>]");
+            
         }
     }
     static void DetectSanguis()
@@ -110,11 +107,7 @@ internal static class Battles
 
                         if (saveTokens != null && playerTokens.Any() && tokensTransferred > 0)
                         {
-                            BattleService._awardSanguis = true;
-                            BattleService._tokensProperty = dataProperty;
-                            BattleService._tokensTransferred = tokensTransferred;
-                            BattleService._saveTokens = saveTokens;
-                            BattleService._playerTokens = playerTokens;
+                           
 
                             Log.LogInfo($"{SANGUIS} registered for familiar battle rewards!");
                         }

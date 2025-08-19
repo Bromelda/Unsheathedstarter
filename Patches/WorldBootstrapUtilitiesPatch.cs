@@ -1,6 +1,6 @@
 ﻿using Bloodcraft.Services;
 using Bloodcraft.Systems;
-using Bloodcraft.Systems.Quests;
+
 using HarmonyLib;
 using Il2CppInterop.Runtime.Injection;
 using ProjectM;
@@ -16,8 +16,8 @@ public static class WorldBootstrapPatch
     static bool ElitePrimalRifts { get; } = ConfigService.ElitePrimalRifts;
     static readonly List<Type> _registerSystems =
     [
-        typeof(QuestTargetSystem),
-        typeof(PrimalWarEventSystem)
+       
+       
     ];
 
     static readonly MethodInfo _getOrCreate = typeof(World)
@@ -40,8 +40,7 @@ public static class WorldBootstrapPatch
 
                 foreach (Type type in _registerSystems)
                 {
-                    if (!ElitePrimalRifts && type == typeof(PrimalWarEventSystem))
-                        continue;
+                   
 
                     RegisterAndAddSystem(world, updateGroup, type);
                 }
